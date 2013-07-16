@@ -1,0 +1,5 @@
+django>=1.5
+boto
+django_extensions
+psycopg2
+Werkzeug

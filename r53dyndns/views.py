@@ -36,7 +36,7 @@ class ListView(R53View):
                     '__id': zone.id,
                     '__domains': dict([(x.domain_name, x.id) for x in zone.domains.all()])
             }})
-        return HttpResponse(json.dumps(data), mimetype='text/javascript')
+        return HttpResponse(json.dumps(data), content_type='text/javascript')
 
 class UpdateView(R53View):
     def post(self, request, fqdn, **kwargs):
@@ -52,20 +52,20 @@ class UpdateView(R53View):
         except Domain.DoesNotExist:
             return HttpResponseNotFound(
                 json.dumps({'status':'error', 'code':404, 'msg': "Domain does not exist."}),
-                mimetype="text/javascript")
+                content_type="text/javascript")
         except Domain.MultipleObjectsReturned:
             return HttpResponseServerError(
                 json.dumps({'status':'error', 'code':500, 'msg': "Domain name provided is ambiguous."}),
-                mimetype="text/javascript")
+                content_type="text/javascript")
         except:
             return HttpResponseServerError(
                 json.dumps({'status':'error', 'code':500, 'msg': "Internal Server Error."}),
-                mimetype="text/javascript")
+                content_type="text/javascript")
         else:
             if domain.record_value == remote_addr:
                 return HttpResponse(
                     json.dumps({'status':'OK','msg':'No Changes.'}),
-                    mimetype="text/javascript")
+                    content_type="text/javascript")
             else:
                 conn = RC(domain.zone.aws_access_key, domain.zone.aws_secret_key)
                 entries = conn.get_all_rrsets(domain.zone.zone_id)
@@ -85,4 +85,4 @@ class UpdateView(R53View):
                 domain.save()
                 return HttpResponse(
                     json.dumps({'status':'OK','msg':resp}),
-                    mimetype="text/javascript")
+                    content_type="text/javascript")

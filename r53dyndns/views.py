@@ -44,7 +44,11 @@ class UpdateView(R53View):
         try:
             if not fqdn.endswith('.'):
                 fqdn += '.'
-            d,z = fqdn.split('.', 1)
+            if fqdn.count('.') > 2:
+                d,z = fqdn.split('.', 1)
+            else:
+                d,z = '', fqdn
+                
             domain = Domain.objects.get(
                         api_key=self.apikey, 
                         domain_name=d,

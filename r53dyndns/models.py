@@ -21,7 +21,7 @@ class Zone(models.Model):
 class Domain(models.Model):
     zone         = models.ForeignKey(Zone, related_name='domains', null=False)
     api_key      = models.ForeignKey(ApiKey, related_name='domains', null=False)
-    domain_name  = models.CharField(max_length=512, blank=False, null=False)
+    domain_name  = models.CharField(max_length=512, blank=True, null=False)
     record_type  = models.CharField(max_length=10, blank=True, null=False, default='A')
     record_value = models.CharField(max_length=15, blank=True, null=False)
     

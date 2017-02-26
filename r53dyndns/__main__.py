@@ -13,12 +13,11 @@ def addowner(args):
         if r.fetchone():
             print("Error: owner %s already exists" % args.owner)
             sys.exit(1)
+        key = sha(str(random.getrandbits(1024)).encode('utf8')).hexdigest()
         cur.execute("INSERT INTO owners (name, key) VALUES (?, ?)",
-                    (args.owner,
-                     sha(str(random.getrandbits(1024)).encode('utf8')
-                         ).hexdigest()))
+                    (args.owner, key))
         cur.commit()
-    print("OK")
+    print(key)
 
 
 def addzone(args):
@@ -82,6 +81,7 @@ def init_db(args):
 
 def main():
     parser = ArgumentParser()
+    parser.set_defaults(func=int)
     sp = parser.add_subparsers()
 
     p = sp.add_parser('initdb', help='initialize database file')
@@ -96,7 +96,7 @@ def main():
     p.add_argument('-a', '--access_key', help='aws access key', required=True)
     p.add_argument('-s', '--secret_key', help='aws secret key', required=True)
     p.add_argument('-z', '--zone_id', help='route53 zone id', required=True)
-    p.add_argument('-a', '--address', help='apex domain ip address',
+    p.add_argument('-A', '--address', help='apex domain ip address',
                    required=True)
     p.add_argument('zone')
     p.set_defaults(func=addzone)
@@ -108,7 +108,7 @@ def main():
     mx.add_argument('-i', '--zone_id', help='zone id')
     p.add_argument('-t', '--type', help='record type (A, CNAME, etc)',
                    required=True)
-    p.add_argument('-a', '--address', help='ip address')
+    p.add_argument('-A', '--address', help='ip address')
     p.add_argument('domain', help='subdomain')
     p.set_defaults(func=adddomain)
 

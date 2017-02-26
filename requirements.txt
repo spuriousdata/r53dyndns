@@ -1,5 +1,2 @@
-django>=1.5
-boto
-django_extensions
-psycopg2
-Werkzeug
+boto3==1.4.4
+Flask==0.12

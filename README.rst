@@ -21,16 +21,16 @@ SETUP
 
 ::
     
-    # r5dadmin initdb
+    $ r5dadmin initdb
     OK
     
-    # r5dadmin addowner bob
+    $ r5dadmin addowner bob
     abcdefghijklmnopqrstuvwxyz
 
-    # r5dadmin addzone -o bob example.com
+    $ r5dadmin addzone -o bob -a aws_access_key -s aws_secret_key -z ABCDEF123 -A 1.2.3.4 example.com
     OK
 
-    # r5dadmin adddomain -o bob foo.example.com
+    $ r5dadmin adddomain -o bob foo.example.com
     OK
 
 -----------------------

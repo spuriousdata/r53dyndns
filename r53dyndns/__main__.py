@@ -1,5 +1,6 @@
 import sys
 import random
+from functools import partial
 from hashlib import sha512 as sha
 from argparse import ArgumentParser
 from r53dyndns import app, get_db
@@ -23,13 +24,13 @@ def addowner(args):
 def addzone(args):
     with app.app_context():
         cur = get_db()
-        r = cur.execute("SELECT id FROM zone WHERE name=?", (args.zone,))
+        r = cur.execute("SELECT id FROM zones WHERE name=?", (args.zone,))
         if r.fetchone():
             print("Error: zone %s already exists" % args.zone)
             sys.exit(1)
 
         zone = args.zone if args.zone.endswith('.') else args.zone + '.'
-        cur.execute("""INSERT INTO zone
+        cur.execute("""INSERT INTO zones
                     (id, owner, aws_access_key, aws_secret_key, name)
                     VALUES (?, ?, ?, ?, ?)""",
                     (args.zone_id, args.owner, args.access_key,
@@ -41,28 +42,31 @@ def addzone(args):
 
 def adddomain(args, addr=None, typ=None):
     with app.app_context():
+        domain = None
         if addr is None:
+            domain = ''
             addr = args.address
-            typ = args.type
+        else:
+            domain = args.domain
         cur = get_db()
         if args.zone_id:
             zoneid = args.zone_id
         else:
-            r = cur.execute("SELECT id FROM zone where name=?", (args.zone,))
+            r = cur.execute("SELECT id FROM zones where name=?", (args.zone,))
             zoneid = r.fetchone()['id']
 
-        r = cur.execute("SELECT zone_id FROM domain WHERE name=? AND zone_id=?",
-                        (args.domain, zoneid))
+        r = cur.execute("SELECT zone_id FROM domains WHERE name=? AND zone_id=?",
+                        (domain, zoneid))
 
         if r.fetchone():
             print("Error: domain %s in zone %s already exists" %
-                  (args.domain, zoneid))
+                  (domain, zoneid))
             sys.exit(1)
 
-        cur.execute("""INSERT INTO domain
+        cur.execute("""INSERT INTO domains
                     (zone_id, name, type, value)
                     VALUES (?, ?, ?, ?)""",
-                    (zoneid, args.domain, typ.upper(), addr))
+                    (zoneid, domain, 'A', addr))
         cur.commit()
     print("OK")
 
@@ -79,9 +83,14 @@ def init_db(args):
     print("OK")
 
 
+def usage(parser, args):
+    parser.print_help()
+    sys.exit(1)
+
+
 def main():
     parser = ArgumentParser()
-    parser.set_defaults(func=int)
+    parser.set_defaults(func=partial(usage, parser))
     sp = parser.add_subparsers()
 
     p = sp.add_parser('initdb', help='initialize database file')
@@ -106,8 +115,6 @@ def main():
     mx = p.add_mutually_exclusive_group(required=True)
     mx.add_argument('-z', '--zone', help='zone name')
     mx.add_argument('-i', '--zone_id', help='zone id')
-    p.add_argument('-t', '--type', help='record type (A, CNAME, etc)',
-                   required=True)
     p.add_argument('-A', '--address', help='ip address')
     p.add_argument('domain', help='subdomain')
     p.set_defaults(func=adddomain)

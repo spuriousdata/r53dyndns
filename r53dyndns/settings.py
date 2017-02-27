@@ -1,3 +1,3 @@
-debug = True
+debug = False
 
 database = "dyndns.db"

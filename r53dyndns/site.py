@@ -76,7 +76,7 @@ def update(fqdn):
                     'code': 500,
                     'msg': "Internal Server Error. %s" % repr(e)}, 500)
     else:
-        if domain['value'] == remote_addr:
+        if domain['value'] == remote_addr():
             return json_response({'status': 'OK', 'msg': 'No Changes.'})
         else:
             r53 = boto3.client('route53',
@@ -90,7 +90,7 @@ def update(fqdn):
                     MaxItems='1',
             )
             rec = rr['ResourceRecordSets'][0]
-            rec['ResourceRecords'][0]['Value'] = remote_addr
+            rec['ResourceRecords'][0]['Value'] = remote_addr()
             r53.change_resource_record_sets(
                 HostedZoneId=domain['zone_id'],
                 ChangeBatch={
@@ -102,11 +102,11 @@ def update(fqdn):
                     ]
                 }
             )
-            log.info("Creating record %s(A):%s", fqdn, remote_addr)
+            log.info("Creating record %s(A):%s", fqdn, remote_addr())
             cur = get_db()
             cur.execute(
                 "UPDATE domains SET value=? WHERE zone_id=? AND name=?",
-                (remote_addr, domain['zone_id'], domain['name'])
+                (remote_addr(), domain['zone_id'], domain['name'])
             )
             cur.commit()
             return json_response({'status': 'OK', 'msg': rr})

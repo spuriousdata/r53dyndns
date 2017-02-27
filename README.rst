@@ -5,6 +5,13 @@ r53dyndns
 r53dyndns is a tool running on flask that lets you manage your own dynamic dns
 server using amazon route53 as the dns server.
 
+**********************
+WARNING
+**********************
+
+This software is in beta. The server seems to work fine, but the cli needs some
+work. Use at your own risk.
+
 
 ###############
 INSTALLATION

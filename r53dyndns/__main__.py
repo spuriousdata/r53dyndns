@@ -1,5 +1,6 @@
 import sys
 import random
+import itertools
 from functools import partial
 from hashlib import sha512 as sha
 from argparse import ArgumentParser
@@ -83,6 +84,33 @@ def init_db(args):
     print("OK")
 
 
+def show(args):
+    with app.app_context():
+        db = get_db()
+        cur = db.execute("""
+SELECT
+    o.name as owner, o.key as token, z.id as zone_id,
+    z.name as zone_name, d.name as domain_name,
+    d.type as record_type, d.value as address
+FROM owners o
+INNER JOIN zones z ON z.owner = o.name
+INNER JOIN domains d ON d.zone_id = z.id""")
+        current_owner = None
+        current_zone = None
+        for row in cur.fetchall():
+            rowdict = dict(itertools.izip(row.keys(), row))
+            if rowdict['owner'] != current_owner:
+                current_owner = rowdict['owner']
+                if args.keys:
+                    print("\n\n{owner:<15}:  {token}".format(**rowdict))
+                else:
+                    print("\n\n{owner:<15}:".format(**rowdict))
+            if rowdict['zone_id'] != current_zone:
+                current_zone = rowdict['zone_id']
+                print("\n  {d:<28}{t:>10}{a:>18}".format(d="DOMAIN", t="TYPE", a="ADDRESS"))
+            print("  {zone_name:<28}{record_type:>10}{address:>18}".format(**rowdict))
+
+
 def usage(parser, args):
     parser.print_help()
     sys.exit(1)
@@ -118,6 +146,11 @@ def main():
     p.add_argument('-A', '--address', help='ip address')
     p.add_argument('domain', help='subdomain')
     p.set_defaults(func=adddomain)
+
+    p = sp.add_parser('show', help='show entries')
+    p.add_argument('-k', '--keys', help='include keys',
+                   action='store_true', default=False)
+    p.set_defaults(func=show)
 
     args = parser.parse_args(sys.argv[1:])
     args.func(args)

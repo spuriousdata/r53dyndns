@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='r53dyndns',
-    version='0.2.0',
+    version='0.3.0',
     description='A dynamic dns server using Amazon route53 and Flask.',
     license=open('LICENSE', 'r').read(),
     author="Mike O'Malley",

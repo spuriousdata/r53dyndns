@@ -1,6 +1,5 @@
 import sys
 import random
-import itertools
 from functools import partial
 from hashlib import sha512 as sha
 from argparse import ArgumentParser
@@ -98,7 +97,7 @@ INNER JOIN domains d ON d.zone_id = z.id""")
         current_owner = None
         current_zone = None
         for row in cur.fetchall():
-            rowdict = dict(itertools.izip(row.keys(), row))
+            rowdict = dict(zip(row.keys(), row))
             if rowdict['owner'] != current_owner:
                 current_owner = rowdict['owner']
                 if args.keys:
@@ -108,7 +107,8 @@ INNER JOIN domains d ON d.zone_id = z.id""")
             if rowdict['zone_id'] != current_zone:
                 current_zone = rowdict['zone_id']
                 print("\n  {d:<28}{t:>10}{a:>18}".format(d="DOMAIN", t="TYPE", a="ADDRESS"))
-            print("  {zone_name:<28}{record_type:>10}{address:>18}".format(**rowdict))
+            fqdn = "{}.{}".format(rowdict['domain_name'], rowdict['zone_name'])
+            print("  {fqdn:<28}{record_type:>10}{address:>18}".format(fqdn=fqdn, **rowdict))
 
 
 def usage(parser, args):
